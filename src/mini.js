@@ -1,6 +1,8 @@
+// mini.js
 const mini = (() => {
     const routes = {};
     let currentComponent = null;
+    const globalState = {};
 
     const createVNode = (html) => {
         const template = document.createElement('template');
@@ -18,14 +20,13 @@ const mini = (() => {
         } else if (newNode && oldNode && changed(newNode, oldNode)) {
             parent.replaceChild(newNode, parent.childNodes[index]);
         } else if (newNode && oldNode && newNode.nodeType === Node.ELEMENT_NODE) {
-        updateAttributes(oldNode, newNode);
-        const maxLength = Math.max(newNode.childNodes.length, oldNode.childNodes.length);
-        for (let i = 0; i < maxLength; i++) {
-            updateElement(oldNode, newNode.childNodes[i], oldNode.childNodes[i], i);
+            updateAttributes(oldNode, newNode);
+            const maxLength = Math.max(newNode.childNodes.length, oldNode.childNodes.length);
+            for (let i = 0; i < maxLength; i++) {
+                updateElement(oldNode, newNode.childNodes[i], oldNode.childNodes[i], i);
+            }
         }
-    }
-};
-
+    };
 
     const updateAttributes = (oldNode, newNode) => {
         const oldAttributes = oldNode.attributes;
@@ -52,6 +53,7 @@ const mini = (() => {
     };
 
     const renderComponent = (component) => {
+        component.beforeRender?.();
         const newVNode = createVNode(component.render());
         const container = document.querySelector('#app');
         const oldVNode = container.childNodes[0];
@@ -64,17 +66,38 @@ const mini = (() => {
         component.afterRender?.();
     };
 
-    const route = (path, component) => routes[path] = component;
-
-    const router = () => {
-        const component = routes[location.hash.slice(1) || '/'];
-        if (component && component !== currentComponent) renderComponent(component);
+    const route = (path, component) => {
+        routes[path] = component;
     };
 
+    const router = () => {
+        const path = location.hash.slice(1) || '/';
+        const component = routes[path];
+        if (component && component !== currentComponent) {
+            currentComponent?.beforeDestroy?.();
+            renderComponent(component);
+        }
+    };
+
+    const linkHandler = (e) => {
+        const link = e.target.closest('a[data-route]');
+        if (link) {
+            e.preventDefault();
+            history.pushState(null, '', link.href);
+            router();
+        }
+    };
+
+    const setState = (newState) => {
+        Object.assign(globalState, newState);
+        router();
+    };
+    
+    const getState = () => globalState;
+    document.addEventListener('click', linkHandler);
     window.addEventListener('hashchange', router);
     window.addEventListener('load', router);
-
-    return { route, router };
+    return { route, router, setState, getState };
 })();
 
 export default mini;
