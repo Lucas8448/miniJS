@@ -1,11 +1,11 @@
 import mini from './mini';
-import { Navbar } from './navbar'; // Import the Navbar component
+import { Navbar } from './navbar';
 
 export const MyComponent = {
   render() {
     return `
       <div>
-        ${Navbar.render()} <!-- Include the Navbar component -->
+        ${Navbar.render()}
         <h1>Main Component</h1>
       </div>
     `;
@@ -19,7 +19,7 @@ export const MyListComponent = {
   render() {
     return `
       <div>
-        ${Navbar.render()} <!-- Include the Navbar component -->
+        ${Navbar.render()}
         <ul>
           ${this.data.items.map(item => `<li>${item}</li>`).join('')}
         </ul>

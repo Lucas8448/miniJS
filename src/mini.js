@@ -1,7 +1,6 @@
-// Inside src/mini.js
+
 const mini = (() => {
     const routes = {};
-  
     const renderComponent = (component) => {
         const template = document.createElement('template');
         template.innerHTML = component.render().trim();
